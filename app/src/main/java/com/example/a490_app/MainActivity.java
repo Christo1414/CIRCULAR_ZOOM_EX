@@ -46,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /** Touch Listener function */
         TranslationView = (View) findViewById(R.id.Layout1);
         X_Value = (TextView) findViewById(R.id.X_Value);
         Y_Value = (TextView) findViewById(R.id.Y_Value);
@@ -61,32 +60,26 @@ public class MainActivity extends AppCompatActivity {
 
         TranslationView.setOnTouchListener(new View.OnTouchListener()     {
 
-            float x_0 = 0;    /** initial values for x and y */
+            float x_0 = 0;
             float y_0 = 0;
-
-            float x = 0;    /** Coordinates for touch listener*/
+            float x = 0;
             float y = 0;
-
-            float i = 0;      /** for counting Motion Events */
+            float i = 0;
             int index = 0;
 
-            String x_vectors_array = null;  /** for holding vectors */
+            String x_vectors_array = null;
             String y_vectors_array = null;
-
-
 
             @Override
             public boolean onTouch(View V, MotionEvent event){
-                x = event.getX();   /** Store x,y values of finger*/
+                x = event.getX();
                 y = event.getY();
 
-
                 if(event.getAction() == MotionEvent.ACTION_DOWN)    {
-                    /** set initial values when finger presses down */
                     x_0 = x;
                     y_0 = y;
-                    /** set sums to zero */
                     i = 0;
+                    XY_COORDS = new float [10][2];
                 }
 
                 XY_COORDS[index][0] = x;
@@ -102,8 +95,9 @@ public class MainActivity extends AppCompatActivity {
                 index++;
                 if (index == 10) {
 
-                    /** where function is called */
-                    isZoomIn = MagAngleZoom();
+
+                    isZoomIn = MagAngleZoom();      /** Call function to determine zoom direction */
+
 
                     magtext.setText(Float.toString(magnitudeInitial) + "  :::  " + Float.toString(magnitudeSample) + "  :::  " + Float.toString(magnitudeFinal));
                     angleText.setText(Float.toString(angleInitial) + "  :::  " + Float.toString(angleSample) + "  :::  " + Float.toString(angleFinal));
@@ -115,22 +109,18 @@ public class MainActivity extends AppCompatActivity {
                     XY_COORDS = new float [10][2];
                 }
 
-                /** where condition is checked */
+
                 if(isZoomIn){
                     Zoom.setText("Zooming in");
                 }else{
                     Zoom.setText("Zooming out");
                 }
+
                 X_Value.setText(x_vectors_array);
                 Y_Value.setText(y_vectors_array);
-
                 X.setText("X:  " + Float.toString(x));
                 Y.setText("Y:  " + Float.toString(y));
-
                 I_Value.setText(Float.toString(i));
-
-
-
                 i++;
 
                 return true;
@@ -143,8 +133,6 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean MagAngleZoom() {
         float x1, y1, x2, y2, xs, ys;
-
-
 
         x1 = XY_COORDS[0][0];
         y1 = XY_COORDS[0][1];
@@ -177,9 +165,7 @@ public class MainActivity extends AppCompatActivity {
         return isZoomIn;
     }
 
-
     private void Test1(){
-
 
         if (angleFinal < angleInitial) {
 //            if(isAngleIncreasing){
@@ -187,10 +173,8 @@ public class MainActivity extends AppCompatActivity {
 //                    isZoomIn = true;
 //                }
 //            }
-
             txtANG.setText("Angle: Decrease");
             isAngleIncreasing = false;
-
         }
 
         if (angleFinal > angleInitial) {
@@ -199,10 +183,8 @@ public class MainActivity extends AppCompatActivity {
 //                    isZoomIn = false;
 //                }
 //            }
-
             txtANG.setText("Angle: Increase");
             isAngleIncreasing = true;
-
         }
 
         if (magnitudeFinal < magnitudeInitial) {
@@ -211,23 +193,23 @@ public class MainActivity extends AppCompatActivity {
                     isZoomIn = false;
                 }//else{isZoomIn = true;}
             }
-
             txtMAG.setText("Magnitude: Decrease");
             isMagnitudeIncreasing = false;
         }
+
         if (magnitudeFinal > magnitudeInitial) {
             if(!isMagnitudeIncreasing){
                 if (isAngleIncreasing) {
                     isZoomIn = true;
                 }//else{isZoomIn = false;}
             }
-
             txtMAG.setText("Magnitude: Increase");
             isMagnitudeIncreasing = true;
         }
 
     }
 
+    /** performance not as good */
     private void Test2(){
 
 
@@ -278,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
+    /** performance not as good */
     private void Test3(){
 
         int zoomScore = 0;
