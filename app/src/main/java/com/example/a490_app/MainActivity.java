@@ -25,9 +25,11 @@ public class MainActivity extends AppCompatActivity {
     private TextView Zoom = null;
     private TextView magtext = null;
     private TextView angleText = null;
-    private float[][] XY_COORDS = new float [10][2];
+    private float[][] XY_COORDS = new float[10][2];
 
-    /** SNIIP */
+    /**
+     * SNIIP
+     */
     private float magnitudeInitial = 0;
     private float magnitudeSample = 0;
     private float magnitudeFinal = 0;
@@ -37,8 +39,17 @@ public class MainActivity extends AppCompatActivity {
     private boolean isZoomIn = false;
     private boolean isAngleIncreasing = false;
     private boolean isMagnitudeIncreasing = false;
-    /** SNIIP */
+    /**
+     * SNIIP
+     */
 
+    private int zoomType;
+    private boolean Zooming;
+    private int circleCounter;
+    boolean isZoomIN1;
+    boolean isZoomIN2;
+    boolean isZoomOUT1;
+    boolean isZoomOUT2;
 
 
     @Override
@@ -58,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         magtext = (TextView) findViewById(R.id.magnitude);
         angleText = (TextView) findViewById(R.id.angle);
 
-        TranslationView.setOnTouchListener(new View.OnTouchListener()     {
+        TranslationView.setOnTouchListener(new View.OnTouchListener() {
 
             float x_0 = 0;
             float y_0 = 0;
@@ -71,32 +82,36 @@ public class MainActivity extends AppCompatActivity {
             String y_vectors_array = null;
 
             @Override
-            public boolean onTouch(View V, MotionEvent event){
+            public boolean onTouch(View V, MotionEvent event) {
                 x = event.getX();
                 y = event.getY();
 
-                if(event.getAction() == MotionEvent.ACTION_DOWN)    {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     x_0 = x;
                     y_0 = y;
                     i = 0;
-                    XY_COORDS = new float [10][2];
+                    XY_COORDS = new float[10][2];
+                }
+
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    Zooming = false;
                 }
 
                 XY_COORDS[index][0] = x;
                 XY_COORDS[index][1] = y;
-                if(x_vectors_array != null) {
-                    x_vectors_array = x_vectors_array +"  :::  "+ Integer.toString((int)x);
-                    y_vectors_array = y_vectors_array +"  :::  "+ Integer.toString((int)y);
-                }else{
-                    x_vectors_array = Integer.toString((int)x);
-                    y_vectors_array = Integer.toString((int)y);
+                if (x_vectors_array != null) {
+                    x_vectors_array = x_vectors_array + "  :::  " + Integer.toString((int) x);
+                    y_vectors_array = y_vectors_array + "  :::  " + Integer.toString((int) y);
+                } else {
+                    x_vectors_array = Integer.toString((int) x);
+                    y_vectors_array = Integer.toString((int) y);
                 }
 
                 index++;
                 if (index == 10) {
 
 
-                    isZoomIn = MagAngleZoom();      /** Call function to determine zoom direction */
+                    zoomType = MagAngleZoom();      /** Call function to determine zoom direction */
 
 
                     magtext.setText(Float.toString(magnitudeInitial) + "  :::  " + Float.toString(magnitudeSample) + "  :::  " + Float.toString(magnitudeFinal));
@@ -106,15 +121,21 @@ public class MainActivity extends AppCompatActivity {
                     x_vectors_array = Float.toString(x);
                     y_vectors_array = Float.toString(y);
 
-                    XY_COORDS = new float [10][2];
+                    XY_COORDS = new float[10][2];
                 }
 
 
-                if(isZoomIn){
+                if (zoomType == 0) {
+                    Zoom.setText("Linear Motion");
+
+                } else if (zoomType == 1) {
                     Zoom.setText("Zooming in");
-                }else{
+
+                } else {
                     Zoom.setText("Zooming out");
+
                 }
+
 
                 X_Value.setText(x_vectors_array);
                 Y_Value.setText(y_vectors_array);
@@ -129,10 +150,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    /** MagAngleZoom() and Test1() contain the logic */
+    /**
+     * MagAngleZoom() and Test1() contain the logic
+     */
 
-    private boolean MagAngleZoom() {
+    private int MagAngleZoom() {
+        // Returns 0 for linear, 1 for ZoomIn, 2 for ZoomOut
+
         float x1, y1, x2, y2, xs, ys;
+
 
         x1 = XY_COORDS[0][0];
         y1 = XY_COORDS[0][1];
@@ -140,6 +166,27 @@ public class MainActivity extends AppCompatActivity {
         ys = XY_COORDS[XY_COORDS.length - (XY_COORDS.length / 2)][1];
         x2 = XY_COORDS[XY_COORDS.length - 1][0];
         y2 = XY_COORDS[XY_COORDS.length - 1][1];
+
+
+        // DETERMINE IF MOTION IS LINEAR
+        if (!Zooming) {
+            if (Math.abs((x2 - x1) * 100 / x2) < 5 || Math.abs((y2 - y1) * 100 / y2) < 5) {
+                return 0;
+            }
+        }
+
+
+        if (circleCounter == 4) {
+            circleCounter = 0;
+            if (isZoomIN1 && isZoomIN2) {
+                Zooming = true;
+            } else if (isZoomOUT1 && isZoomOUT2) {
+                Zooming = true;
+            } else {
+                return 0;
+            }
+        }
+
 
         magnitudeInitial = (float) Math.sqrt(Math.pow(x1, 2) + Math.pow(y1, 2));
         magnitudeSample = (float) Math.sqrt(Math.pow(xs, 2) + Math.pow(ys, 2));
@@ -159,58 +206,134 @@ public class MainActivity extends AppCompatActivity {
         angleFinal = (float) Math.toDegrees(angleFinal);
 
 
-        Test1();
+        if (Zooming) {
+            DirectionOfRotation2();
+            if (isZoomIn) {
+                return 1;
+            } else {
+                return 2;
+            }
+        } else {
+            DirectionOfRotation();
+            return 0;
+        }
 
-
-        return isZoomIn;
     }
 
-    private void Test1(){
+    private void DirectionOfRotation() {
 
         if (angleFinal < angleInitial) {
-//            if(isAngleIncreasing){
-//                if (isMagnitudeIncreasing) {
-//                    isZoomIn = true;
-//                }
-//            }
+            if (isAngleIncreasing) {
+                if (isMagnitudeIncreasing) {
+                    //   isZoomIn = true;
+                    isZoomIN1 = true;
+                    isZoomOUT1 = false;
+                }
+            }
             txtANG.setText("Angle: Decrease");
             isAngleIncreasing = false;
+            circleCounter++;
         }
 
         if (angleFinal > angleInitial) {
-//            if(!isAngleIncreasing){
-//                if (isMagnitudeIncreasing) {
-//                    isZoomIn = false;
-//                }
-//            }
+            if (!isAngleIncreasing) {
+                if (isMagnitudeIncreasing) {
+                    //   isZoomIn = false;
+                    isZoomOUT1 = true;
+                    isZoomIN1 = false;
+                }
+            }
+            txtANG.setText("Angle: Increase");
+            isAngleIncreasing = true;
+            circleCounter++;
+        }
+
+        if (magnitudeFinal < magnitudeInitial) {
+            if (isMagnitudeIncreasing) {
+                if (isAngleIncreasing) {
+                    //   isZoomIn = false;
+                    isZoomOUT2 = true;
+                    isZoomIN2 = false;
+                }
+            }
+            txtMAG.setText("Magnitude: Decrease");
+            isMagnitudeIncreasing = false;
+            circleCounter++;
+
+        }
+
+        if (magnitudeFinal > magnitudeInitial) {
+            if (!isMagnitudeIncreasing) {
+                if (isAngleIncreasing) {
+                    //   isZoomIn = true;
+                    isZoomIN2 = true;
+                    isZoomOUT2 = false;
+                }
+            }
+            txtMAG.setText("Magnitude: Increase");
+            isMagnitudeIncreasing = true;
+            circleCounter++;
+
+        }
+
+    }
+
+    private void DirectionOfRotation2() {
+
+        if (angleFinal < angleInitial) {
+            if (isAngleIncreasing) {
+                if (isMagnitudeIncreasing) {
+                    isZoomIn = true;
+
+                }
+            }
+            txtANG.setText("Angle: Decrease");
+            isAngleIncreasing = false;
+
+        }
+
+        if (angleFinal > angleInitial) {
+            if (!isAngleIncreasing) {
+                if (isMagnitudeIncreasing) {
+                    isZoomIn = false;
+
+                }
+            }
             txtANG.setText("Angle: Increase");
             isAngleIncreasing = true;
         }
 
         if (magnitudeFinal < magnitudeInitial) {
-            if(isMagnitudeIncreasing){
+            if (isMagnitudeIncreasing) {
                 if (isAngleIncreasing) {
                     isZoomIn = false;
-                }//else{isZoomIn = true;}
+
+                }
             }
             txtMAG.setText("Magnitude: Decrease");
             isMagnitudeIncreasing = false;
+
         }
 
         if (magnitudeFinal > magnitudeInitial) {
-            if(!isMagnitudeIncreasing){
+            if (!isMagnitudeIncreasing) {
                 if (isAngleIncreasing) {
                     isZoomIn = true;
-                }//else{isZoomIn = false;}
+
+                }
             }
             txtMAG.setText("Magnitude: Increase");
             isMagnitudeIncreasing = true;
+
+
         }
 
     }
 
-    /** performance not as good */
-    private void Test2(){
+    /**
+     * performance not as good
+     */
+    private void Test2() {
 
 
         if (angleSample < angleInitial || angleFinal < angleInitial) {
@@ -238,7 +361,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (magnitudeSample < magnitudeInitial || magnitudeFinal < magnitudeInitial) {
-            if(isMagnitudeIncreasing){
+            if (isMagnitudeIncreasing) {
                 if (isAngleIncreasing) {
                     isZoomIn = false;
                 }//else{isZoomIn = false;}
@@ -248,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
             isMagnitudeIncreasing = false;
         }
         if (magnitudeSample > magnitudeInitial || magnitudeFinal > magnitudeInitial) {
-            if(!isMagnitudeIncreasing){
+            if (!isMagnitudeIncreasing) {
                 if (isAngleIncreasing) {
                     isZoomIn = true;
                 }//else{isZoomIn = false;}
@@ -260,13 +383,15 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    /** performance not as good */
-    private void Test3(){
+    /**
+     * performance not as good
+     */
+    private void Test3() {
 
         int zoomScore = 0;
 
         if (angleFinal < angleInitial) {
-            if(isAngleIncreasing){
+            if (isAngleIncreasing) {
                 if (isMagnitudeIncreasing) {
 
                     //isZoomIn = true;
@@ -281,7 +406,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (angleFinal > angleInitial) {
-            if(!isAngleIncreasing){
+            if (!isAngleIncreasing) {
                 if (isMagnitudeIncreasing) {
 
                     zoomScore--;
@@ -296,7 +421,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (magnitudeFinal < magnitudeInitial) {
-            if(isMagnitudeIncreasing){
+            if (isMagnitudeIncreasing) {
                 if (isAngleIncreasing) {
 
                     zoomScore--;
@@ -308,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
             isMagnitudeIncreasing = false;
         }
         if (magnitudeFinal > magnitudeInitial) {
-            if(!isMagnitudeIncreasing){
+            if (!isMagnitudeIncreasing) {
                 if (isAngleIncreasing) {
 
                     zoomScore++;
@@ -321,9 +446,9 @@ public class MainActivity extends AppCompatActivity {
             isMagnitudeIncreasing = true;
         }
 
-        if(zoomScore>0){
+        if (zoomScore > 0) {
             isZoomIn = true;
-        }else if(zoomScore <0){
+        } else if (zoomScore < 0) {
             isZoomIn = false;
         }
 
