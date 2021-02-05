@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView magtext = null;
     private TextView angleText = null;
     private float[][] XY_COORDS = new float[10][2];
+    private int THRESH = 20;
 
     /**
      * SNIIP
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     boolean isZoomOUT1;
     boolean isZoomOUT2;
     /** SNIIP */
+
 
 
     @Override
@@ -167,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
 
         // DETERMINE IF MOTION IS LINEAR
         if (!Zooming) {
-            if (Math.abs((x2 - x1) * 100 / x2) < 5 || Math.abs((y2 - y1) * 100 / y2) < 5) {
+            if (getDisplacementsOneDimension(XY_COORDS)) {
                 return 0;
             }
         }
@@ -312,6 +314,53 @@ public class MainActivity extends AppCompatActivity {
             isMagnitudeIncreasing = true;
         }
 
+    }
+
+
+    //1-D motion method
+    private boolean getDisplacementsOneDimension(float[][] coords){
+        float dispSum = 0;
+        float netSum;
+        float x1;
+        float x2 = 0;
+        float y1;
+        float y2 = 0;
+        StringBuilder xy = new StringBuilder(); // For debugging purposes
+
+        for (int i = 0; i < coords.length - 1; i++){
+            if (coords[i+1][0] == 0.0 && coords[i+1][1] == 0.0){
+                if (i == 0) return false; // Discard any lone coordinates
+                break;
+            }
+            x1 = coords[i][0];
+            x2 = coords[i+1][0];
+            y1 = coords[i][1];
+            y2 = coords[i+1][1];
+            dispSum += getDisplacement2Points(x1, x2, y1, y2);
+            xy.append("\n (").append(String.valueOf(x1)).append(",").append(String.valueOf(y1)).append(") ");
+        }
+        x1 = coords[0][0];
+        y1 = coords[0][1];
+
+        netSum = getDisplacement2Points(x1, x2, y1, y2);
+        float diff = Math.abs(netSum - dispSum);
+        boolean send;
+        if (diff < THRESH) send = true;
+        else {
+            /*if ((x1 - x2)<20 || (y1 - y2)<20){ // Limited travel along the x or y axis implies backtracking
+                send = true;
+            }*/
+            send = false;
+        }
+        //Log.info("Displacement Sum: " + dispSum + ", Net Sum: " + netSum);
+        //Log.info("Displacement Vector: " + xy);
+        //Log.info("Start and end positions: (" + x1 + "," + y1 +" ), ( " + x2 +", "+ y2 + ")");
+        //Log.info("Difference: " + diff + ", Send to pi: " + send);
+        return send;
+    }
+
+    private float getDisplacement2Points(float x1, float x2, float y1, float y2) {
+        return (float) Math.hypot(Math.abs(x1 - x2), Math.abs(y1 - y2));
     }
 }
 
