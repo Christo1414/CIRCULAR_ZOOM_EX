@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * SNIIP
      */
+    // Global Variables
     private float magnitudeInitial = 0;
     private float magnitudeSample = 0;
     private float magnitudeFinal = 0;
@@ -39,10 +40,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean isZoomIn = false;
     private boolean isAngleIncreasing = false;
     private boolean isMagnitudeIncreasing = false;
-    /**
-     * SNIIP
-     */
-
     private int zoomType;
     private boolean Zooming;
     private int circleCounter;
@@ -50,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     boolean isZoomIN2;
     boolean isZoomOUT1;
     boolean isZoomOUT2;
+    /** SNIIP */
 
 
     @Override
@@ -94,7 +92,13 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 if (event.getAction() == MotionEvent.ACTION_UP) {
+                    /** Cancel zoom condition when finger released */
                     Zooming = false;
+                    circleCounter = 0;
+                    isZoomIN1 = false;
+                    isZoomIN2 = false;
+                    isZoomOUT1 = false;
+                    isZoomOUT2 = false;
                 }
 
                 XY_COORDS[index][0] = x;
@@ -150,20 +154,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    /**
-     * MagAngleZoom() and Test1() contain the logic
-     */
 
     private int MagAngleZoom() {
         // Returns 0 for linear, 1 for ZoomIn, 2 for ZoomOut
 
-        float x1, y1, x2, y2, xs, ys;
-
-
+        float x1, y1, x2, y2;
         x1 = XY_COORDS[0][0];
         y1 = XY_COORDS[0][1];
-        xs = XY_COORDS[XY_COORDS.length - (XY_COORDS.length / 2)][0];
-        ys = XY_COORDS[XY_COORDS.length - (XY_COORDS.length / 2)][1];
         x2 = XY_COORDS[XY_COORDS.length - 1][0];
         y2 = XY_COORDS[XY_COORDS.length - 1][1];
 
@@ -175,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-
+        // DETERMINE IF USER IS TRYING TO ZOOM
         if (circleCounter == 4) {
             circleCounter = 0;
             if (isZoomIN1 && isZoomIN2) {
@@ -187,45 +184,41 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-
+        // FIND MAG AND ANGLE
         magnitudeInitial = (float) Math.sqrt(Math.pow(x1, 2) + Math.pow(y1, 2));
-        magnitudeSample = (float) Math.sqrt(Math.pow(xs, 2) + Math.pow(ys, 2));
         magnitudeFinal = (float) Math.sqrt(Math.pow(x2, 2) + Math.pow(y2, 2));
 
         if (y1 != 0) {
             angleInitial = (float) Math.atan(x1 / y1);
         }
-        if (ys != 0) {
-            angleSample = (float) Math.atan(xs / ys);
-        }
+
         if (y2 != 0) {
             angleFinal = (float) Math.atan(x2 / y2);
         }
         angleInitial = (float) Math.toDegrees(angleInitial);
-        angleSample = (float) Math.toDegrees(angleSample);
         angleFinal = (float) Math.toDegrees(angleFinal);
 
-
+        // IF NOT IN ZOOM STATE, CHECK IF USER IS TRYING TO ZOOM THEN RETURN 0 FOR LINEAR
         if (Zooming) {
-            DirectionOfRotation2();
+            DirectionOfRotation();
             if (isZoomIn) {
                 return 1;
             } else {
                 return 2;
             }
         } else {
-            DirectionOfRotation();
+            DetermineIfZooming();
             return 0;
         }
 
     }
 
-    private void DirectionOfRotation() {
+    private void DetermineIfZooming() {
 
+        //CASE 1 FOR ZOOMING IN
         if (angleFinal < angleInitial) {
             if (isAngleIncreasing) {
                 if (isMagnitudeIncreasing) {
-                    //   isZoomIn = true;
                     isZoomIN1 = true;
                     isZoomOUT1 = false;
                 }
@@ -235,10 +228,10 @@ public class MainActivity extends AppCompatActivity {
             circleCounter++;
         }
 
+        //CASE 1 FOR ZOOMING OUT
         if (angleFinal > angleInitial) {
             if (!isAngleIncreasing) {
                 if (isMagnitudeIncreasing) {
-                    //   isZoomIn = false;
                     isZoomOUT1 = true;
                     isZoomIN1 = false;
                 }
@@ -248,10 +241,10 @@ public class MainActivity extends AppCompatActivity {
             circleCounter++;
         }
 
+        //CASE 2 FOR ZOOMING OUT
         if (magnitudeFinal < magnitudeInitial) {
             if (isMagnitudeIncreasing) {
                 if (isAngleIncreasing) {
-                    //   isZoomIn = false;
                     isZoomOUT2 = true;
                     isZoomIN2 = false;
                 }
@@ -262,10 +255,10 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+        //CASE 2 FOR ZOOMING IN
         if (magnitudeFinal > magnitudeInitial) {
             if (!isMagnitudeIncreasing) {
                 if (isAngleIncreasing) {
-                    //   isZoomIn = true;
                     isZoomIN2 = true;
                     isZoomOUT2 = false;
                 }
@@ -273,30 +266,25 @@ public class MainActivity extends AppCompatActivity {
             txtMAG.setText("Magnitude: Increase");
             isMagnitudeIncreasing = true;
             circleCounter++;
-
         }
-
     }
 
-    private void DirectionOfRotation2() {
+    private void DirectionOfRotation() {
 
         if (angleFinal < angleInitial) {
             if (isAngleIncreasing) {
                 if (isMagnitudeIncreasing) {
                     isZoomIn = true;
-
                 }
             }
             txtANG.setText("Angle: Decrease");
             isAngleIncreasing = false;
-
         }
 
         if (angleFinal > angleInitial) {
             if (!isAngleIncreasing) {
                 if (isMagnitudeIncreasing) {
                     isZoomIn = false;
-
                 }
             }
             txtANG.setText("Angle: Increase");
@@ -307,7 +295,6 @@ public class MainActivity extends AppCompatActivity {
             if (isMagnitudeIncreasing) {
                 if (isAngleIncreasing) {
                     isZoomIn = false;
-
                 }
             }
             txtMAG.setText("Magnitude: Decrease");
@@ -319,141 +306,12 @@ public class MainActivity extends AppCompatActivity {
             if (!isMagnitudeIncreasing) {
                 if (isAngleIncreasing) {
                     isZoomIn = true;
-
                 }
             }
-            txtMAG.setText("Magnitude: Increase");
-            isMagnitudeIncreasing = true;
-
-
-        }
-
-    }
-
-    /**
-     * performance not as good
-     */
-    private void Test2() {
-
-
-        if (angleSample < angleInitial || angleFinal < angleInitial) {
-//            if(isAngleIncreasing){
-//                if (isMagnitudeIncreasing) {
-//                    isZoomIn = true;
-//                }
-//            }
-
-            txtANG.setText("Angle: Decrease");
-            isAngleIncreasing = false;
-
-        }
-
-        if (angleSample > angleInitial || angleFinal > angleInitial) {
-//            if(!isAngleIncreasing){
-//                if (isMagnitudeIncreasing) {
-//                    isZoomIn = false;
-//                }
-//            }
-
-            txtANG.setText("Angle: Increase");
-            isAngleIncreasing = true;
-
-        }
-
-        if (magnitudeSample < magnitudeInitial || magnitudeFinal < magnitudeInitial) {
-            if (isMagnitudeIncreasing) {
-                if (isAngleIncreasing) {
-                    isZoomIn = false;
-                }//else{isZoomIn = false;}
-            }
-
-            txtMAG.setText("Magnitude: Decrease");
-            isMagnitudeIncreasing = false;
-        }
-        if (magnitudeSample > magnitudeInitial || magnitudeFinal > magnitudeInitial) {
-            if (!isMagnitudeIncreasing) {
-                if (isAngleIncreasing) {
-                    isZoomIn = true;
-                }//else{isZoomIn = false;}
-            }
-
             txtMAG.setText("Magnitude: Increase");
             isMagnitudeIncreasing = true;
         }
 
     }
-
-    /**
-     * performance not as good
-     */
-    private void Test3() {
-
-        int zoomScore = 0;
-
-        if (angleFinal < angleInitial) {
-            if (isAngleIncreasing) {
-                if (isMagnitudeIncreasing) {
-
-                    //isZoomIn = true;
-                    zoomScore++;
-
-                }
-            }
-
-            txtANG.setText("Angle: Decrease");
-            isAngleIncreasing = false;
-
-        }
-
-        if (angleFinal > angleInitial) {
-            if (!isAngleIncreasing) {
-                if (isMagnitudeIncreasing) {
-
-                    zoomScore--;
-
-
-                }
-            }
-
-            txtANG.setText("Angle: Increase");
-            isAngleIncreasing = true;
-
-        }
-
-        if (magnitudeFinal < magnitudeInitial) {
-            if (isMagnitudeIncreasing) {
-                if (isAngleIncreasing) {
-
-                    zoomScore--;
-
-                }
-            }
-
-            txtMAG.setText("Magnitude: Decrease");
-            isMagnitudeIncreasing = false;
-        }
-        if (magnitudeFinal > magnitudeInitial) {
-            if (!isMagnitudeIncreasing) {
-                if (isAngleIncreasing) {
-
-                    zoomScore++;
-
-
-                }
-            }
-
-            txtMAG.setText("Magnitude: Increase");
-            isMagnitudeIncreasing = true;
-        }
-
-        if (zoomScore > 0) {
-            isZoomIn = true;
-        } else if (zoomScore < 0) {
-            isZoomIn = false;
-        }
-
-    }
-
-
 }
 
