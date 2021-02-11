@@ -3,12 +3,9 @@ package com.example.a490_app;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.os.strictmode.CredentialProtectedWhileLockedViolation;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
-
-import java.util.Vector;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -42,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isAngleIncreasing = false;
     private boolean isMagnitudeIncreasing = false;
     private int zoomType;
-    private boolean Zooming;
+    private boolean Zooming = false;
     private int circleCounter;
     boolean isZoomIN1;
     boolean isZoomIN2;
@@ -166,26 +163,6 @@ public class MainActivity extends AppCompatActivity {
         x2 = XY_COORDS[XY_COORDS.length - 1][0];
         y2 = XY_COORDS[XY_COORDS.length - 1][1];
 
-
-        // DETERMINE IF MOTION IS LINEAR
-        if (!Zooming) {
-            if (getDisplacementsOneDimension(XY_COORDS)) {
-                return 0;
-            }
-        }
-
-        // DETERMINE IF USER IS TRYING TO ZOOM
-        if (circleCounter == 4) {
-            circleCounter = 0;
-            if (isZoomIN1 && isZoomIN2) {
-                Zooming = true;
-            } else if (isZoomOUT1 && isZoomOUT2) {
-                Zooming = true;
-            } else {
-                return 0;
-            }
-        }
-
         // FIND MAG AND ANGLE
         magnitudeInitial = (float) Math.sqrt(Math.pow(x1, 2) + Math.pow(y1, 2));
         magnitudeFinal = (float) Math.sqrt(Math.pow(x2, 2) + Math.pow(y2, 2));
@@ -200,22 +177,52 @@ public class MainActivity extends AppCompatActivity {
         angleInitial = (float) Math.toDegrees(angleInitial);
         angleFinal = (float) Math.toDegrees(angleFinal);
 
+
+        // DETERMINE IF USER IS TRYING TO ZOOM
+        if (circleCounter == 4) {
+            circleCounter = 0;
+            if (isZoomIN1 && isZoomIN2) {
+                Zooming = true;
+                return 1;
+            } else if (isZoomOUT1 && isZoomOUT2) {
+                Zooming = true;
+                return 2;
+            } else{
+                return 0;
+            }
+        }
+
+
+        // DETERMINE IF MOTION IS LINEAR
+        if (!Zooming) {
+            CheckZooming();
+            if (getDisplacementsOneDimension(XY_COORDS)) {
+                return 0;
+            }
+        }
+
+
         // IF NOT IN ZOOM STATE, CHECK IF USER IS TRYING TO ZOOM THEN RETURN 0 FOR LINEAR
         if (Zooming) {
-            DirectionOfRotation();
-            if (isZoomIn) {
-                return 1;
-            } else {
-                return 2;
+            CheckZooming();
+
+            if (circleCounter == 4) {
+                circleCounter = 0;
+                if (isZoomIN1 && isZoomIN2) {
+                    return 1;
+                } else if (isZoomOUT1 && isZoomOUT2) {
+                    return 2;
+                }
             }
-        } else {
-            DetermineIfZooming();
-            return 0;
+            return zoomType;
         }
+        else{
+            CheckZooming();
+            return 0;    }
 
     }
 
-    private void DetermineIfZooming() {
+    private void CheckZooming() {
 
         //CASE 1 FOR ZOOMING IN
         if (angleFinal < angleInitial) {
@@ -228,6 +235,7 @@ public class MainActivity extends AppCompatActivity {
             txtANG.setText("Angle: Decrease");
             isAngleIncreasing = false;
             circleCounter++;
+
         }
 
         //CASE 1 FOR ZOOMING OUT
@@ -241,6 +249,8 @@ public class MainActivity extends AppCompatActivity {
             txtANG.setText("Angle: Increase");
             isAngleIncreasing = true;
             circleCounter++;
+
+
         }
 
         //CASE 2 FOR ZOOMING OUT
@@ -255,6 +265,7 @@ public class MainActivity extends AppCompatActivity {
             isMagnitudeIncreasing = false;
             circleCounter++;
 
+
         }
 
         //CASE 2 FOR ZOOMING IN
@@ -266,8 +277,10 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             txtMAG.setText("Magnitude: Increase");
+
             isMagnitudeIncreasing = true;
             circleCounter++;
+
         }
     }
 
@@ -357,6 +370,16 @@ public class MainActivity extends AppCompatActivity {
         //Log.info("Start and end positions: (" + x1 + "," + y1 +" ), ( " + x2 +", "+ y2 + ")");
         //Log.info("Difference: " + diff + ", Send to pi: " + send);
         return send;
+    }
+
+    private boolean CheckIfXorY(float x1, float y1, float x2, float y2){
+
+        if ((x2 - x1)*100/x2 < 5 || (y2 - y1)*100 < 5){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 
     private float getDisplacement2Points(float x1, float x2, float y1, float y2) {
