@@ -179,46 +179,35 @@ public class MainActivity extends AppCompatActivity {
 
 
         // DETERMINE IF USER IS TRYING TO ZOOM
-        if (circleCounter == 4) {
-            circleCounter = 0;
-            if (isZoomIN1 && isZoomIN2) {
-                Zooming = true;
-                return 1;
-            } else if (isZoomOUT1 && isZoomOUT2) {
-                Zooming = true;
-                return 2;
-            } else{
-                Zooming = true;
+        CheckZooming();
+        if (!Zooming) {
+            if (circleCounter >= 2) {
+                circleCounter = 0;
+                if (isZoomIN1 && isZoomIN2) {
+                    Zooming = true;
+                    return 1;
+                } else if (isZoomOUT1 && isZoomOUT2) {
+                    Zooming = true;
+                    return 2;
+                } else {
+                    return 0;
+                }
             }
         }
-
-
-        // DETERMINE IF MOTION IS LINEAR
-//        if (!Zooming) {
-//            CheckZooming();
-//            if (getDisplacementsOneDimension(XY_COORDS)) {
-//                return 0;
-//            }
-//        }
-
-
-        // IF NOT IN ZOOM STATE, CHECK IF USER IS TRYING TO ZOOM THEN RETURN 0 FOR LINEAR
-        if (Zooming) {
-            CheckZooming();
-
-            if (circleCounter == 4) {
+        else {
+            if (circleCounter >= 2) {
                 circleCounter = 0;
                 if (isZoomIN1 && isZoomIN2) {
                     return 1;
                 } else if (isZoomOUT1 && isZoomOUT2) {
                     return 2;
+                } else {
+                    return zoomType;
                 }
             }
-            return zoomType;
         }
-        else{
-            CheckZooming();
-            return 0;    }
+
+        return 0;
 
     }
 
