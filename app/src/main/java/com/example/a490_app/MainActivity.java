@@ -188,18 +188,18 @@ public class MainActivity extends AppCompatActivity {
                 Zooming = true;
                 return 2;
             } else{
-                return 0;
+                Zooming = true;
             }
         }
 
 
         // DETERMINE IF MOTION IS LINEAR
-        if (!Zooming) {
-            CheckZooming();
-            if (getDisplacementsOneDimension(XY_COORDS)) {
-                return 0;
-            }
-        }
+//        if (!Zooming) {
+//            CheckZooming();
+//            if (getDisplacementsOneDimension(XY_COORDS)) {
+//                return 0;
+//            }
+//        }
 
 
         // IF NOT IN ZOOM STATE, CHECK IF USER IS TRYING TO ZOOM THEN RETURN 0 FOR LINEAR
@@ -282,51 +282,6 @@ public class MainActivity extends AppCompatActivity {
             circleCounter++;
 
         }
-    }
-
-    private void DirectionOfRotation() {
-
-        if (angleFinal < angleInitial) {
-            if (isAngleIncreasing) {
-                if (isMagnitudeIncreasing) {
-                    isZoomIn = true;
-                }
-            }
-            txtANG.setText("Angle: Decrease");
-            isAngleIncreasing = false;
-        }
-
-        if (angleFinal > angleInitial) {
-            if (!isAngleIncreasing) {
-                if (isMagnitudeIncreasing) {
-                    isZoomIn = false;
-                }
-            }
-            txtANG.setText("Angle: Increase");
-            isAngleIncreasing = true;
-        }
-
-        if (magnitudeFinal < magnitudeInitial) {
-            if (isMagnitudeIncreasing) {
-                if (isAngleIncreasing) {
-                    isZoomIn = false;
-                }
-            }
-            txtMAG.setText("Magnitude: Decrease");
-            isMagnitudeIncreasing = false;
-
-        }
-
-        if (magnitudeFinal > magnitudeInitial) {
-            if (!isMagnitudeIncreasing) {
-                if (isAngleIncreasing) {
-                    isZoomIn = true;
-                }
-            }
-            txtMAG.setText("Magnitude: Increase");
-            isMagnitudeIncreasing = true;
-        }
-
     }
 
 
